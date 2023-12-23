@@ -8,6 +8,7 @@ int main (void) {
   Music music = LoadMusicStream("Starship.ogg");
 
     PlayMusicStream(music);
+    SetMusicVolume(music, 0.4f);
   while (!WindowShouldClose()) {
     UpdateMusicStream(music);
 
