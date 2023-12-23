@@ -11,6 +11,13 @@ int main (void) {
   while (!WindowShouldClose()) {
     UpdateMusicStream(music);
 
+    if (IsKeyPressed(KEY_SPACE)) {
+      if (IsMusicStreamPlaying(music)) {
+        PauseMusicStream(music);
+      } else {
+        ResumeMusicStream(music);
+      }
+    }
     BeginDrawing();
     ClearBackground(BLUE);
     EndDrawing();
