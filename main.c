@@ -18,7 +18,7 @@ void callback(void *bufferData, unsigned int frames) {
   global_frames_count = frames;
 }
 
-int main(void) {
+int main(void) { /*{{{*/
   InitWindow(800, 600, "musicviz");
   SetTargetFPS(60);
   InitAudioDevice();
@@ -44,18 +44,28 @@ int main(void) {
         ResumeMusicStream(music);
       }
     }
+    int w = GetRenderWidth();
+    int h = GetRenderHeight();
+
     BeginDrawing();
     ClearBackground(BLACK);
-    float cell_width = (float)GetRenderWidth() / global_frames_count;
+
+    float cell_width = (float)w / global_frames_count;
+
     for (size_t i = 0; i < global_frames_count; ++i) {
       int16_t sample = *(int16_t *)&global_frames[i];
-      printf("%d ", sample);
+      if (sample > 0) {
+        float t = (float)sample / INT16_MAX;
+        DrawRectangle(i * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, RED);
+      } else {
+        float t = (float)sample / INT16_MIN;
+        DrawRectangle(i * cell_width, h / 2, cell_width, h / 2 * t, RED);
+      }
     }
-    printf("\n");
     /* if (global_frames_count > 0) exit(1); */
     EndDrawing();
   }
   return 0;
 }
-
+/*}}}*/
 // https://www.youtube.com/watch?v=Xdbk1Pr5WXU&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=1
