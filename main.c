@@ -11,7 +11,7 @@ typedef struct {
   float right;
 } Frame;
 
-Frame global_frames[4800] = {0};
+Frame global_frames[4800 * 2] = {0};
 size_t global_frames_count = 0;
 
 void callback(void *bufferData, unsigned int frames) { /*{{{*/
