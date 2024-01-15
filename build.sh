@@ -9,7 +9,6 @@ mkdir -p ./build
 # -fPIC: position independant code (does not depend on absolute addr. in memory)
 clang $CFLAGS -o ./build/libplug.so -fPIC -shared ./src/plug.c $LIBS
 
-
 clang $CFLAGS -o ./build/musicviz ./src/musicviz.c $LIBS -L./build/ 
 clang -o ./build/fft ./src/fft.c -lm
 
