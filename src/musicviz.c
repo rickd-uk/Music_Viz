@@ -1,3 +1,5 @@
+#include "plug.h"
+
 #include <assert.h>
 #include <complex.h>
 #include <math.h>
@@ -6,8 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "plug.h"
 
 #define ARRAY_LEN(xs) sizeof(xs) / sizeof(xs[0])
 
