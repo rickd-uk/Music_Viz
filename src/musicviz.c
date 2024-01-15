@@ -90,6 +90,18 @@ plug_hello_t plug_hello = NULL;
 
 int main(int argc, char **argv) {
 
+  const char *libplug_file_name = "libplug.so";
+  void *libplug = dlopen(libplug_file_name, RTLD_NOW);
+  if (libplug == NULL) {
+    fprintf(stderr, "ERROR: could not load %s: %s", libplug_file_name, dlerror());
+    return 1;
+  }
+
+  plug_hello = dlsym(libplug, "plug_hello");
+  if (plug_hello == NULL) {
+    fprintf(stderr, "ERROR: could not find plug_hello symbol in %s:  %s", libplug_file_name, dlerror());
+    return 1;
+  }
   plug_hello();
 
   return 0;
