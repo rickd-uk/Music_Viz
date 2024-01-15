@@ -168,6 +168,5 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-/*}}}*/
-// https://www.youtube.com/watch?v=Xdbk1Pr5WXU&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=1
-// 2:35:30~    Porting fft into main.c
+// url: https://www.youtube.com/watch?v=Y57ruDOwH1g&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=2
+// 35:24
