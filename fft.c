@@ -45,7 +45,8 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
 int main() {
   pi = atan2f(1, 1) * 4;
   /* printf("%.10f\n", pi); */
-  size_t n = 8;
+  /* size_t n = 4096 * 2; */
+  size_t n = 32;
   float in[n];
   float complex out[n];
 
@@ -57,6 +58,7 @@ int main() {
   // Faster fourier transform (we only need to iterate half of the freq.)
 
   fft(in, 1, out, n);
+  /* dft(in, out, n); */
 
   for (size_t f = 0; f < n; ++f) {
     printf("%02zu: %.2f, %.2f\n", f, creal(out[f]), cimag(out[f]));
@@ -70,4 +72,4 @@ int main() {
 //  the value of it is the amplitude
 // clang -o fft fft.c -lm && ./fft
 
-// Continuee-->  2:13:38 - Music Visualizer (Fast Fourier Transform)
+// Continue-->  2:13:38 - Music Visualizer (Fast Fourier Transform)

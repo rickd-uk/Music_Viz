@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <complex.h>
+#include <math.h>
 #include <raylib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -6,35 +8,72 @@
 #include <string.h>
 
 #define ARRAY_LEN(xs) sizeof(xs) / sizeof(xs[0])
+
+float pi;
+
+#define N 256
+float in[N];
+float complex out[N];
+float max_amp;
+
 typedef struct {
   float left;
   float right;
 } Frame;
 
-Frame global_frames[4800 * 2] = {0};
-size_t global_frames_count = 0;
+void fft(float in[], size_t stride, float complex out[], size_t n) {
+  assert(n > 0);
 
-void callback(void *bufferData, unsigned int frames) { /*{{{*/
-  size_t capacity = ARRAY_LEN(global_frames);
-  if (frames <= capacity - global_frames_count) {
-    memcpy(global_frames + global_frames_count, bufferData, sizeof(Frame) * frames);
-    global_frames_count += frames;
-  } else if (frames <= capacity) {
-    memmove(global_frames, global_frames + frames, sizeof(Frame) * (capacity - frames));
-    memcpy(global_frames + (capacity - frames), bufferData, sizeof(Frame) * frames);
-  } else {
-    // chunk is bigger than capacity
-    memcpy(global_frames, bufferData, sizeof(Frame) * capacity);
-    global_frames_count = capacity;
+  if (n == 1) {
+    out[0] = in[0];
+    return;
   }
-  /* if (frames > ARRAY_LEN(global_frames)) { */
-  /*   frames = ARRAY_LEN(global_frames); */
-  /* } */
-  /* memcpy(global_frames, bufferData, sizeof(uint32_t) * frames); */
-  /* global_frames_count = frames; */
+
+  fft(in, stride * 2, out, n / 2);
+  fft(in + stride, stride * 2, out + n / 2, n / 2);
+
+  for (size_t k = 0; k < n / 2; ++k) {
+    float t = (float)k / n;
+    float complex v = cexp(-2 * I * pi * t) * out[k + n / 2];
+    float complex e = out[k];
+    out[k] = e + v;
+    out[k + n / 2] = e - v;
+  }
 }
-/*}}}*/
-int main(void) { /*{{{*/
+
+float amp(float complex z) {
+  float a = fabsf(crealf(z));
+  float b = fabsf(cimagf(z));
+  if (a < b)
+    return b;
+  return a;
+}
+
+void callback(void *bufferData, unsigned int frames) {
+  if (frames >= N)
+    return;
+
+  Frame *fs = bufferData;
+
+  for (size_t i = 0; i < frames; ++i) {
+    in[i] = fs[i].left;
+  }
+
+  fft(in, 1, out, N);
+
+  max_amp = 0.0f;
+  for (size_t i = 0; i < frames; ++i) {
+
+    float a = amp(out[i]);
+    if (max_amp < a)
+      max_amp = a;
+  }
+}
+
+int main(void) {
+
+  pi = atan2f(1, 1) * 4;
+
   InitWindow(800, 600, "musicviz");
   SetTargetFPS(60);
   InitAudioDevice();
@@ -66,20 +105,26 @@ int main(void) { /*{{{*/
     BeginDrawing();
     ClearBackground(BLACK);
 
-    float cell_width = (float)w / global_frames_count;
+    float cell_width = (float)w / N;
 
-    for (size_t i = 0; i < global_frames_count; ++i) {
-      float t = global_frames[i].left;
-      if (t > 0) {
-        DrawRectangle(i * cell_width, h / 2.0f - h / 2.0f * t, 1, h / 2.0f * t, RED);
-      } else {
-        DrawRectangle(i * cell_width, h / 2.0f, 1, h / 2.0f * t, RED);
-      }
+    for (size_t i = 0; i < N; ++i) {
+      float t = amp(out[i]);
+      DrawRectangle(i * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, RED);
     }
+    /* for (size_t i = 0; i < global_frames_count; ++i) { */
+    /*   float t = global_frames[i].left; */
+    /*   if (t > 0) { */
+    /*     DrawRectangle(i * cell_width, h / 2.0f - h / 2.0f * t, 1, h / 2.0f * t, RED); */
+    /*   } else { */
+    /*     DrawRectangle(i * cell_width, h / 2.0f, 1, h / 2.0f * t, RED); */
+    /*   } */
+    /* } */
     /* if (global_frames_count > 0) exit(1); */
     EndDrawing();
   }
   return 0;
 }
+
 /*}}}*/
 // https://www.youtube.com/watch?v=Xdbk1Pr5WXU&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=1
+// 2:35:30~    Porting fft into main.c
