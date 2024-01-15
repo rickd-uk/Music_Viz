@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "plug.h"
+
 #define ARRAY_LEN(xs) sizeof(xs) / sizeof(xs[0])
 
 float pi;
@@ -71,6 +73,10 @@ void callback(void *bufferData, unsigned int frames) {
 }
 
 int main(void) {
+
+  plug_hello();
+
+  return 0;
 
   pi = atan2f(1, 1) * 4;
 
