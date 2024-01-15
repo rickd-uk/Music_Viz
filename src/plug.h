@@ -2,6 +2,6 @@
 #ifndef PLUG_H_
 #define PLUG_H_
 
-void plug_hello(void);
+typedef void (*plug_hello_t)(void);
 
 #endif // PLUG_H_

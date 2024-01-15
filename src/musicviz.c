@@ -72,6 +72,8 @@ void callback(void *bufferData, unsigned int frames) {
   }
 }
 
+plug_hello_t plug_hello = NULL;
+
 int main(void) {
 
   plug_hello();
@@ -84,7 +86,7 @@ int main(void) {
   SetTargetFPS(60);
   InitAudioDevice();
 
-  Music music = LoadMusicStream("Starship.ogg");
+  Music music = LoadMusicStream("music/Starship.ogg");
   assert(music.stream.sampleSize == 16);
   assert(music.stream.channels == 2);
 
