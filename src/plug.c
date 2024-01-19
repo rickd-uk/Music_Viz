@@ -93,10 +93,10 @@ void plug_update(Plug *plug) {
     if (max_amp < a)
       max_amp = a;
   }
-  float cell_width = (float)w / N;
+  float cell_width = 2; //(float)w / N;
 
   for (size_t i = 0; i < N; ++i) {
-    float t = amp(out[i]);
+    float t = amp(out[i]) / max_amp;
     DrawRectangle(i * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, GREEN);
   }
   /* for (size_t i = 0; i < global_frames_count; ++i) { */
