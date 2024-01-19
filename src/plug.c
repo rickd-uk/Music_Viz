@@ -103,9 +103,14 @@ void plug_update(Plug *plug) {
   float cell_width = (float)w / m;
   m = 0;
   for (float f = 20.0f; (size_t)f < N; f *= step) {
-
-    float t = amp(out[(size_t)floor(f)]) / max_amp;
-    DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, BLUE);
+    float f1 = f * step;
+    float a = 0.0f;
+    for (size_t q = (size_t)f; q < N && q < (size_t)f1; ++q) {
+      a += amp(out[q]);
+    }
+    a /= (size_t)f1 - (size_t)f + 1;
+    float t = a / max_amp;
+    DrawRectangle(m * cell_width, (float)h / 2 - ((float)h / 2 * t), cell_width, ((float)h / 2 * t), BLUE);
     m += 1;
   }
   /* for (size_t i = 0; i < global_frames_count; ++i) { */
