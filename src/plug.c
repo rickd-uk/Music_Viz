@@ -1,6 +1,7 @@
 #include "plug.h"
 #include <assert.h>
 #include <math.h>
+#include <raylib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -83,6 +84,11 @@ void plug_update(Plug *plug) {
     } else {
       ResumeMusicStream(plug->music);
     }
+  }
+
+  if (IsKeyPressed(KEY_Q)) {
+    StopMusicStream(plug->music);
+    PlayMusicStream(plug->music);
   }
   int w = GetRenderWidth();
   int h = GetRenderHeight();
