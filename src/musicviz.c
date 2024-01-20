@@ -30,6 +30,8 @@ void *libplug = NULL;
 plug_hello_t plug_hello = NULL;
 plug_init_t plug_init = NULL;
 plug_update_t plug_update = NULL;
+plug_pre_reload_t plug_pre_reload = NULL;
+plug_post_reload_t plug_post_reload = NULL;
 Plug plug = {0}; // allocate in static memory
 
 bool reload_libplug(void) {
@@ -60,8 +62,21 @@ bool reload_libplug(void) {
     fprintf(stderr, "ERROR: could not find plug_update symbol in %s:  %s", libplug_file_name, dlerror());
     return false;
   }
+
+  plug_pre_reload = dlsym(libplug, "plug_pre_reload");
+  if (plug_pre_reload == NULL) {
+    fprintf(stderr, "ERROR: could not find plug_pre_reload symbol in %s:  %s", libplug_file_name, dlerror());
+    return false;
+  }
+
+  plug_post_reload = dlsym(libplug, "plug_post_reload");
+  if (plug_post_reload == NULL) {
+    fprintf(stderr, "ERROR: could not find plug_post_reload symbol in %s:  %s", libplug_file_name, dlerror());
+    return false;
+  }
   return true;
 }
+
 int main(int argc, char **argv) {
 
   if (!reload_libplug())
@@ -84,13 +99,14 @@ int main(int argc, char **argv) {
 
   while (!WindowShouldClose()) {
     if (IsKeyPressed(KEY_R)) {
+
+      plug_pre_reload(&plug); // signals to the plugin we are about to reload
       if (!reload_libplug())
         return 1;
+      plug_post_reload(&plug);
     }
     plug_update(&plug);
   }
   return 0;
 }
 
-// url: https://www.youtube.com/watch?v=Y57ruDOwH1g&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=2
-// 1:28:18

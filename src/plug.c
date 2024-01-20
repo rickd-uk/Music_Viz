@@ -67,6 +67,10 @@ void plug_init(Plug *plug, const char *file_path) {
   AttachAudioStreamProcessor(plug->music.stream, callback);
 }
 
+void plug_pre_reload(Plug *plug) { DetachAudioStreamProcessor(plug->music.stream, callback); }
+
+void plug_post_reload(Plug *plug) { AttachAudioStreamProcessor(plug->music.stream, callback); }
+
 void plug_update(Plug *plug) {
 
   UpdateMusicStream(plug->music);
@@ -88,7 +92,6 @@ void plug_update(Plug *plug) {
 
   float max_amp = 0.0f;
   for (size_t i = 0; i < N; ++i) {
-
     float a = amp(out[i]);
     if (max_amp < a)
       max_amp = a;
@@ -110,7 +113,7 @@ void plug_update(Plug *plug) {
     }
     a /= (size_t)f1 - (size_t)f + 1;
     float t = a / max_amp;
-    DrawRectangle(m * cell_width, (float)h / 2 - ((float)h / 2 * t), cell_width, ((float)h / 2 * t), BLUE);
+    DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, GREEN);
     m += 1;
   }
   /* for (size_t i = 0; i < global_frames_count; ++i) { */
