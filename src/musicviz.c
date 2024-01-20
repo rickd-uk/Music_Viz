@@ -28,11 +28,17 @@ char *shift_args(int *argc, char ***argv) {
 const char *libplug_file_name = "libplug.so";
 void *libplug = NULL;
 
-#define PLUG(name) name##_t name = NULL;
+#ifdef HOTRELOAD
+#define PLUG(name) name##_t *name = NULL;
+#else
+#define PLUG(name) name##_t name;
+#endif
 LIST_OF_PLUGS
 #undef PLUG
 
 Plug plug = {0};
+
+#ifdef HOTRELOAD
 bool reload_libplug(void) {
 
   if (libplug != NULL)
@@ -55,6 +61,9 @@ bool reload_libplug(void) {
 
   return true;
 }
+#else
+#define reload_libplug() true
+#endif
 
 int main(int argc, char **argv) {
 
@@ -92,6 +101,6 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-// url: https://www.youtube.com/watch?v=Y57ruDOwH1g&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=7
+// url: https://www.youtube.com/watch?v=PgDqBZFir1A&list=PLpM-Dvs8t0Vak1rrE2NJn8XYEJ5M7-BqT&index=
 // ./build.sh && ./build/musicviz music/Starship.ogg
 

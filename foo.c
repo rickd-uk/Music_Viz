@@ -1,12 +1,12 @@
+#include <stdio.h>
 
+typedef void(foo_t)(void);
 
-#define LIST_OF_PLUGS                                                                                                  \
-  PLUG(plug_hello)                                                                                                     \
-  PLUG(plug_init)                                                                                                      \
-  PLUG(plug_pre_reload)                                                                                                \
-  PLUG(plug_post_reload)                                                                                               \
-  PLUG(plug_update)
+foo_t foo;
 
-#define PLUG(name) name##_t name = NULL;
-LIST_OF_PLUGS
-#undef PLUG
+int main(void) {
+  foo();
+  return 0;
+}
+
+void foo_(void) { printf("foo\n"); }
