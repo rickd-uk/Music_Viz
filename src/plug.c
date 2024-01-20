@@ -71,8 +71,10 @@ void plug_pre_reload(Plug *plug) { DetachAudioStreamProcessor(plug->music.stream
 
 void plug_post_reload(Plug *plug) { AttachAudioStreamProcessor(plug->music.stream, callback); }
 
+int q = 0;
 void plug_update(Plug *plug) {
 
+  q += 1;
   UpdateMusicStream(plug->music);
 
   if (IsKeyPressed(KEY_SPACE)) {
@@ -88,7 +90,8 @@ void plug_update(Plug *plug) {
   BeginDrawing();
   ClearBackground(BLACK);
 
-  fft(in, 1, out, N);
+  if (q % 3 == 0)
+    fft(in, 1, out, N);
 
   float max_amp = 0.0f;
   for (size_t i = 0; i < N; ++i) {
