@@ -6,6 +6,7 @@
 #include <raylib.h>
 
 #define N ((1) << (13))
+// 1 << 13  =  8,192
 
 typedef struct {
   Music music;

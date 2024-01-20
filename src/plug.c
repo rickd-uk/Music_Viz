@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 float in[N];
 float _Complex out[N];
@@ -40,13 +41,12 @@ float amp(float complex z) {
 }
 
 void callback(void *bufferData, unsigned int frames) {
-  if (frames > N)
-    frames = N;
 
   Frame *fs = bufferData;
 
   for (size_t i = 0; i < frames; ++i) {
-    in[i] = fs[i].left;
+    memmove(in, in + 1, (N - 1) * sizeof(in[0]));
+    in[N - 1] = fs[i].left;
   }
 }
 
