@@ -84,6 +84,9 @@ int main(int argc, char **argv) {
         return 1;
       plug_post_reload(&plug);
     }
+    if (IsKeyPressed(KEY_T)) {
+      plug_test();
+    }
     plug_update(&plug);
   }
   return 0;
