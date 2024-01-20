@@ -122,7 +122,10 @@ void plug_update(Plug *plug) {
     }
     a /= (size_t)f1 - (size_t)f + 1;
     float t = a / max_amp;
+    /* DrawRectangle(m * cell_width, h / 2, cell_width, h / 2 * t, GREEN); */
     DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, GREEN);
+    /* DrawCircle(m * cell_width, h / 2 - h / 2 * t, h / 2 * t, BLUE); */
+    /* DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE); */
     m += 1;
   }
   /* for (size_t i = 0; i < global_frames_count; ++i) { */
