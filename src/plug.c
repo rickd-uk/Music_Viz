@@ -25,7 +25,7 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
   fft(in + stride, stride * 2, out + n / 2, n / 2);
 
   for (size_t k = 0; k < n / 2; ++k) {
-    float t = (float)k / n;
+           float t = (float)k / n;
     float complex v = cexp(-2 * I * PI * t) * out[k + n / 2];
     float complex e = out[k];
     out[k] = e + v;
@@ -96,7 +96,7 @@ void plug_update(Plug *plug) {
 
   if (IsFileDropped()) {
     FilePathList droppedFiles = LoadDroppedFiles();
-<<<<<<< HEAD
+
     if (droppedFiles.count > 0) {
       const char *file_path = droppedFiles.paths[0];
       StopMusicStream(plug->music);
@@ -112,14 +112,15 @@ void plug_update(Plug *plug) {
       SetMusicVolume(plug->music, 0.5f);
       PlayMusicStream(plug->music);
       AttachAudioStreamProcessor(plug->music.stream, callback);
-=======
-    printf("NEW FILES Dropped\n");
-    for (size_t i = 0; i < droppedFiles.count; ++i) {
-      printf("  %s", droppedFiles.paths[i]);
->>>>>>> origin/drag_and_drop
-    }
 
-    UnloadDroppedFiles(droppedFiles);
+      printf("NEW FILES Dropped\n");
+      for (size_t i = 0; i < droppedFiles.count; ++i) {
+        printf("  %s", droppedFiles.paths[i]);
+
+      }
+
+      UnloadDroppedFiles(droppedFiles);
+    }
   }
   int w = GetRenderWidth();
   int h = GetRenderHeight();
