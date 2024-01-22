@@ -41,13 +41,14 @@ float amp(float complex z) {
   return a;
 }
 
-void callback(void *bufferData, unsigned int frames) {
+void callback(void *bufferData, unsigned int frame) {
 
-  Frame *fs = bufferData;
+  // Frame *fs = bufferData;
+  float (*fs)[2] = bufferData;
 
-  for (size_t i = 0; i < frames; ++i) {
+  for (size_t i = 0; i < frame; ++i) {
     memmove(in, in + 1, (N - 1) * sizeof(in[0]));
-    in[N - 1] = fs[i].left;
+    in[N - 1] = fs[i][0];
   }
 }
 
@@ -95,9 +96,21 @@ void plug_update(Plug *plug) {
 
   if (IsFileDropped()) {
     FilePathList droppedFiles = LoadDroppedFiles();
-    printf("NEW FILES Dropped\n");
-    for (size_t i = 0; i < droppedFiles.count; ++i) {
-      printf("  %s", droppedFiles.paths[i]);
+    if (droppedFiles.count > 0) {
+      const char *file_path = droppedFiles.paths[0];
+      StopMusicStream(plug->music);
+      UnloadMusicStream(plug->music);
+      plug->music = LoadMusicStream(file_path);
+
+      printf("music.frameCount = %u\n", plug->music.frameCount);
+      printf("music.stream.sampleRate = %u\n", plug->music.stream.sampleRate);
+      printf("music.stream.sampleSize = %u\n", plug->music.stream.sampleSize);
+      printf("music.stream.channels = %u\n", plug->music.stream.channels);
+      assert(plug->music.stream.channels == 2);
+
+      SetMusicVolume(plug->music, 0.5f);
+      PlayMusicStream(plug->music);
+      AttachAudioStreamProcessor(plug->music.stream, callback);
     }
 
     UnloadDroppedFiles(droppedFiles);
