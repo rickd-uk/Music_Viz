@@ -92,6 +92,16 @@ void plug_update(Plug *plug) {
     StopMusicStream(plug->music);
     PlayMusicStream(plug->music);
   }
+
+  if (IsFileDropped()) {
+    FilePathList droppedFiles = LoadDroppedFiles();
+    printf("NEW FILES Dropped\n");
+    for (size_t i = 0; i < droppedFiles.count; ++i) {
+      printf("  %s", droppedFiles.paths[i]);
+    }
+
+    UnloadDroppedFiles(droppedFiles);
+  }
   int w = GetRenderWidth();
   int h = GetRenderHeight();
 
@@ -125,9 +135,9 @@ void plug_update(Plug *plug) {
     a /= (size_t)f1 - (size_t)f + 1;
     float t = a / max_amp;
     /* DrawRectangle(m * cell_width, h / 2, cell_width, h / 2 * t, GREEN); */
-    DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, RED);
+    // DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, YELLOW);
     /* DrawCircle(m * cell_width, h / 2 - h / 2 * t, h / 2 * t, BLUE); */
-    /* DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE); */
+    DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE); 
     m += 1;
   }
   /* for (size_t i = 0; i < global_frames_count; ++i) { */

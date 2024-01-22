@@ -87,7 +87,8 @@ int main(int argc, char **argv) {
 
   while (!WindowShouldClose()) {
     if (IsKeyPressed(KEY_R)) {
-
+      
+      plug_test();
       plug_pre_reload(&plug); // signals to the plugin we are about to reload
       if (!reload_libplug())
         return 1;
