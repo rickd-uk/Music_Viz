@@ -96,6 +96,7 @@ void plug_update(Plug *plug) {
 
   if (IsFileDropped()) {
     FilePathList droppedFiles = LoadDroppedFiles();
+<<<<<<< HEAD
     if (droppedFiles.count > 0) {
       const char *file_path = droppedFiles.paths[0];
       StopMusicStream(plug->music);
@@ -111,6 +112,11 @@ void plug_update(Plug *plug) {
       SetMusicVolume(plug->music, 0.5f);
       PlayMusicStream(plug->music);
       AttachAudioStreamProcessor(plug->music.stream, callback);
+=======
+    printf("NEW FILES Dropped\n");
+    for (size_t i = 0; i < droppedFiles.count; ++i) {
+      printf("  %s", droppedFiles.paths[i]);
+>>>>>>> origin/drag_and_drop
     }
 
     UnloadDroppedFiles(droppedFiles);
