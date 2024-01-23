@@ -77,7 +77,7 @@ void plug_post_reload(Plug *plug) { AttachAudioStreamProcessor(plug->music.strea
 
 int q = 0;
 void plug_update(Plug *plug) {
-
+  
   q += 1;
   UpdateMusicStream(plug->music);
 
@@ -113,11 +113,11 @@ void plug_update(Plug *plug) {
       PlayMusicStream(plug->music);
       AttachAudioStreamProcessor(plug->music.stream, callback);
 
-      printf("NEW FILES Dropped\n");
-      for (size_t i = 0; i < droppedFiles.count; ++i) {
-        printf("  %s", droppedFiles.paths[i]);
-
-      }
+      // printf("NEW FILES Dropped\n");
+      // for (size_t i = 0; i < droppedFiles.count; ++i) {
+      //   printf("  %s", droppedFiles.paths[i]);
+      //
+      // }
 
       UnloadDroppedFiles(droppedFiles);
     }
