@@ -3,15 +3,17 @@
 #include <math.h>
 #include <raylib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 float in[N];
 float _Complex out[N];
 
 typedef struct {
-  float left;
-  float right;
-} Frame;
+  Music music;
+} Plug;
+
+Plug *plug;
 
 void fft(float in[], size_t stride, float complex out[], size_t n) {
   assert(n > 0);
@@ -20,12 +22,12 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
     out[0] = in[0];
     return;
   }
-
+  // test
   fft(in, stride * 2, out, n / 2);
   fft(in + stride, stride * 2, out + n / 2, n / 2);
 
   for (size_t k = 0; k < n / 2; ++k) {
-           float t = (float)k / n;
+    float t = (float)k / n;
     float complex v = cexp(-2 * I * PI * t) * out[k + n / 2];
     float complex e = out[k];
     out[k] = e + v;
@@ -44,7 +46,7 @@ float amp(float complex z) {
 void callback(void *bufferData, unsigned int frame) {
 
   // Frame *fs = bufferData;
-  float (*fs)[2] = bufferData;
+  float(*fs)[plug->music.stream.channels] = bufferData;
 
   for (size_t i = 0; i < frame; ++i) {
     memmove(in, in + 1, (N - 1) * sizeof(in[0]));
@@ -52,46 +54,50 @@ void callback(void *bufferData, unsigned int frame) {
   }
 }
 
-void plug_hello(void) { printf("Hello from Plugin\n"); }
+void plug_init(void) {
 
-void plug_test(void) { printf("GREAT  Testing from Plugin\n"); }
+  plug = malloc(sizeof(*plug));
+  assert(plug != NULL && "Memory allocation failed!");
+  memset(plug, 0, sizeof(*plug));
 
-void plug_init(Plug *plug, const char *file_path) {
-
-  plug->music = LoadMusicStream(file_path);
-  printf("music.frameCount = %u\n", plug->music.frameCount);
-  printf("music.stream.sampleRate = %u\n", plug->music.stream.sampleRate);
-  printf("music.stream.sampleSize = %u\n", plug->music.stream.sampleSize);
-  printf("music.stream.channels = %u\n", plug->music.stream.channels);
-  assert(plug->music.stream.sampleSize == 16);
-  assert(plug->music.stream.channels == 2);
-
-  SetMusicVolume(plug->music, 0.4f);
-  PlayMusicStream(plug->music);
-  AttachAudioStreamProcessor(plug->music.stream, callback);
 }
 
-void plug_pre_reload(Plug *plug) { DetachAudioStreamProcessor(plug->music.stream, callback); }
+Plug *plug_pre_reload(void) {
+  if (IsMusicReady(plug->music)) {
+    DetachAudioStreamProcessor(plug->music.stream, callback);
+  }
+  return plug;
+}
 
-void plug_post_reload(Plug *plug) { AttachAudioStreamProcessor(plug->music.stream, callback); }
+void plug_post_reload(Plug *prev) {
+  plug = prev;
+  if (IsMusicReady(plug->music)) {
+    AttachAudioStreamProcessor(plug->music.stream, callback);
+  }
+}
 
 int q = 0;
-void plug_update(Plug *plug) {
-  
-  q += 1;
-  UpdateMusicStream(plug->music);
+void plug_update(void) {
 
+  q += 1;
+  if (IsMusicReady(plug->music)) {
+    UpdateMusicStream(plug->music);
+  }
   if (IsKeyPressed(KEY_SPACE)) {
-    if (IsMusicStreamPlaying(plug->music)) {
-      PauseMusicStream(plug->music);
-    } else {
-      ResumeMusicStream(plug->music);
+    if (IsMusicReady(plug->music)) {
+      if (IsMusicStreamPlaying(plug->music)) {
+        PauseMusicStream(plug->music);
+      } else {
+        ResumeMusicStream(plug->music);
+      }
     }
   }
 
   if (IsKeyPressed(KEY_Q)) {
-    StopMusicStream(plug->music);
-    PlayMusicStream(plug->music);
+    if (IsMusicReady(plug->music)) {
+      StopMusicStream(plug->music);
+      PlayMusicStream(plug->music);
+    }
   }
 
   if (IsFileDropped()) {
@@ -99,25 +105,22 @@ void plug_update(Plug *plug) {
 
     if (droppedFiles.count > 0) {
       const char *file_path = droppedFiles.paths[0];
-      StopMusicStream(plug->music);
-      UnloadMusicStream(plug->music);
+      if (IsMusicReady(plug->music)) {
+        StopMusicStream(plug->music);
+        UnloadMusicStream(plug->music);
+      }
       plug->music = LoadMusicStream(file_path);
 
-      printf("music.frameCount = %u\n", plug->music.frameCount);
-      printf("music.stream.sampleRate = %u\n", plug->music.stream.sampleRate);
-      printf("music.stream.sampleSize = %u\n", plug->music.stream.sampleSize);
-      printf("music.stream.channels = %u\n", plug->music.stream.channels);
-      assert(plug->music.stream.channels == 2);
+      if (IsMusicReady(plug->music)) {
+        printf("music.frameCount = %u\n", plug->music.frameCount);
+        printf("music.stream.sampleRate = %u\n", plug->music.stream.sampleRate);
+        printf("music.stream.sampleSize = %u\n", plug->music.stream.sampleSize);
+        printf("music.stream.channels = %u\n", plug->music.stream.channels);
 
-      SetMusicVolume(plug->music, 0.5f);
-      PlayMusicStream(plug->music);
-      AttachAudioStreamProcessor(plug->music.stream, callback);
-
-      // printf("NEW FILES Dropped\n");
-      // for (size_t i = 0; i < droppedFiles.count; ++i) {
-      //   printf("  %s", droppedFiles.paths[i]);
-      //
-      // }
+        SetMusicVolume(plug->music, 0.5f);
+        AttachAudioStreamProcessor(plug->music.stream, callback);
+        PlayMusicStream(plug->music);
+      }
 
       UnloadDroppedFiles(droppedFiles);
     }
@@ -157,7 +160,7 @@ void plug_update(Plug *plug) {
     /* DrawRectangle(m * cell_width, h / 2, cell_width, h / 2 * t, GREEN); */
     // DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, YELLOW);
     /* DrawCircle(m * cell_width, h / 2 - h / 2 * t, h / 2 * t, BLUE); */
-    DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE); 
+    DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
     m += 1;
   }
   /* for (size_t i = 0; i < global_frames_count; ++i) { */
