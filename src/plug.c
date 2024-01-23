@@ -25,7 +25,7 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
   fft(in + stride, stride * 2, out + n / 2, n / 2);
 
   for (size_t k = 0; k < n / 2; ++k) {
-    float t = (float)k / n;
+           float t = (float)k / n;
     float complex v = cexp(-2 * I * PI * t) * out[k + n / 2];
     float complex e = out[k];
     out[k] = e + v;
@@ -113,14 +113,16 @@ void plug_update(Plug *plug) {
       PlayMusicStream(plug->music);
       AttachAudioStreamProcessor(plug->music.stream, callback);
 
-    printf("NEW FILES Dropped\n");
-    for (size_t i = 0; i < droppedFiles.count; ++i) {
-      printf("  %s", droppedFiles.paths[i]);
 
+      printf("NEW FILES Dropped\n");
+      for (size_t i = 0; i < droppedFiles.count; ++i) {
+        printf("  %s", droppedFiles.paths[i]);
+
+      }
+
+      UnloadDroppedFiles(droppedFiles);
     }
-
-    UnloadDroppedFiles(droppedFiles);
-  }
+  
   }
   int w = GetRenderWidth();
   int h = GetRenderHeight();
@@ -160,6 +162,7 @@ void plug_update(Plug *plug) {
     DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE); 
     m += 1;
   }
+
   /* for (size_t i = 0; i < global_frames_count; ++i) { */
   /*   float t = global_frames[i].left; */
   /*   if (t > 0) { */
