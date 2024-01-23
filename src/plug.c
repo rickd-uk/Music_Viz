@@ -11,6 +11,7 @@ float _Complex out[N];
 
 typedef struct {
   Music music;
+  bool error;
 } Plug;
 
 Plug *plug;
@@ -59,7 +60,6 @@ void plug_init(void) {
   plug = malloc(sizeof(*plug));
   assert(plug != NULL && "Memory allocation failed!");
   memset(plug, 0, sizeof(*plug));
-
 }
 
 Plug *plug_pre_reload(void) {
@@ -112,6 +112,7 @@ void plug_update(void) {
       plug->music = LoadMusicStream(file_path);
 
       if (IsMusicReady(plug->music)) {
+        plug->error = false;
         printf("music.frameCount = %u\n", plug->music.frameCount);
         printf("music.stream.sampleRate = %u\n", plug->music.stream.sampleRate);
         printf("music.stream.sampleSize = %u\n", plug->music.stream.sampleSize);
@@ -120,6 +121,8 @@ void plug_update(void) {
         SetMusicVolume(plug->music, 0.5f);
         AttachAudioStreamProcessor(plug->music.stream, callback);
         PlayMusicStream(plug->music);
+      } else {
+        plug->error = true;
       }
 
       UnloadDroppedFiles(droppedFiles);
@@ -131,46 +134,53 @@ void plug_update(void) {
   BeginDrawing();
   ClearBackground(BLACK);
 
-  if (q % 3 == 0)
+  if (IsMusicReady(plug->music)) {
+
     fft(in, 1, out, N);
 
-  float max_amp = 0.0f;
-  for (size_t i = 0; i < N; ++i) {
-    float a = amp(out[i]);
-    if (max_amp < a)
-      max_amp = a;
-  }
-
-  float step = 1.06;
-  size_t m = 0;
-  for (float f = 20.0f; (size_t)f < N; f *= step) {
-    m += 1;
-  }
-
-  float cell_width = (float)w / m;
-  m = 0;
-  for (float f = 20.0f; (size_t)f < N; f *= step) {
-    float f1 = f * step;
-    float a = 0.0f;
-    for (size_t q = (size_t)f; q < N && q < (size_t)f1; ++q) {
-      a += amp(out[q]);
+    float max_amp = 0.0f;
+    for (size_t i = 0; i < N; ++i) {
+      float a = amp(out[i]);
+      if (max_amp < a)
+        max_amp = a;
     }
-    a /= (size_t)f1 - (size_t)f + 1;
-    float t = a / max_amp;
-    /* DrawRectangle(m * cell_width, h / 2, cell_width, h / 2 * t, GREEN); */
-    // DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, YELLOW);
-    /* DrawCircle(m * cell_width, h / 2 - h / 2 * t, h / 2 * t, BLUE); */
-    DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
-    m += 1;
+
+    float step = 1.06;
+    size_t m = 0;
+    for (float f = 20.0f; (size_t)f < N; f *= step) {
+      m += 1;
+    }
+
+    float cell_width = (float)w / m;
+    m = 0;
+    for (float f = 20.0f; (size_t)f < N; f *= step) {
+      float f1 = f * step;
+      float a = 0.0f;
+      for (size_t q = (size_t)f; q < N && q < (size_t)f1; ++q) {
+        a += amp(out[q]);
+      }
+      a /= (size_t)f1 - (size_t)f + 1;
+      float t = a / max_amp;
+      /* DrawRectangle(m * cell_width, h / 2, cell_width, h / 2 * t, GREEN); */
+      DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
+      m += 1;
+    }
+    /* for (size_t i = 0; i < global_frames_count; ++i) { */
+    /*   float t = global_frames[i].left; */
+    /*   if (t > 0) { */
+    /*     DrawRectangle(i * cell_width, h / 2.0f - h / 2.0f * t, 1, h / 2.0f * t, RED); */
+    /*   } else { */
+    /*     DrawRectangle(i * cell_width, h / 2.0f, 1, h / 2.0f * t, RED); */
+    /*   } */
+    /* } */
+    /* if (global_frames_count > 0) exit(1); */
+  } else {
+    if (plug->error) {
+      DrawText("It must be a valid audio file", 0, 0, 19, RED);
+    } else {
+
+      DrawText("Drag & drop here!", 0, 0, 29, WHITE);
+    }
   }
-  /* for (size_t i = 0; i < global_frames_count; ++i) { */
-  /*   float t = global_frames[i].left; */
-  /*   if (t > 0) { */
-  /*     DrawRectangle(i * cell_width, h / 2.0f - h / 2.0f * t, 1, h / 2.0f * t, RED); */
-  /*   } else { */
-  /*     DrawRectangle(i * cell_width, h / 2.0f, 1, h / 2.0f * t, RED); */
-  /*   } */
-  /* } */
-  /* if (global_frames_count > 0) exit(1); */
   EndDrawing();
 }
