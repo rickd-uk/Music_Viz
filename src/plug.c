@@ -6,11 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define FONT_SIZE 39
+
 float in[N];
 float _Complex out[N];
 
 typedef struct {
   Music music;
+  Font font;
   bool error;
 } Plug;
 
@@ -60,6 +63,8 @@ void plug_init(void) {
   plug = malloc(sizeof(*plug));
   assert(plug != NULL && "Memory allocation failed!");
   memset(plug, 0, sizeof(*plug));
+
+  plug->font = LoadFontEx("./fonts/RubikBurned-Regular.ttf", FONT_SIZE, NULL, 0);
 }
 
 Plug *plug_pre_reload(void) {
@@ -175,12 +180,22 @@ void plug_update(void) {
     /* } */
     /* if (global_frames_count > 0) exit(1); */
   } else {
+    const char *label;
+    Color color;
     if (plug->error) {
-      DrawText("It must be a valid audio file", 0, 0, 19, RED);
+      label = "It must be a valid audio file";
+      color = RED;
     } else {
-
-      DrawText("Drag & drop here!", 0, 0, 29, WHITE);
+      label = "Drag & drop here!";
+      color = WHITE;
     }
+    Vector2 size = MeasureTextEx(plug->font, label, plug->font.baseSize, 0);
+    Vector2 position = {
+        (float)w / 2 - size.x / 2,
+        (float)h / 2 - size.y / 2,
+    };
+
+    DrawTextEx(plug->font, label, position, plug->font.baseSize, 0, color);
   }
   EndDrawing();
 }
