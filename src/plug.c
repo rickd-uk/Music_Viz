@@ -8,7 +8,8 @@
 
 #define FONT_SIZE 39
 
-float in[N];
+float in1[N];
+float in2[N];
 float _Complex out[N];
 
 typedef struct {
@@ -54,8 +55,8 @@ void callback(void *bufferData, unsigned int frame) {
   float(*fs)[plug->music.stream.channels] = bufferData;
 
   for (size_t i = 0; i < frame; ++i) {
-    memmove(in, in + 1, (N - 1) * sizeof(in[0]));
-    in[N - 1] = fs[i][0];
+    memmove(in1, in1 + 1, (N - 1) * sizeof(in1[0]));
+    in1[N - 1] = fs[i][0];
   }
 }
 
@@ -142,7 +143,12 @@ void plug_update(void) {
 
   if (IsMusicReady(plug->music)) {
 
-    fft(in, 1, out, N);
+    for (size_t i = 0; i < N; ++i) {
+      float t = (float)i / N;
+      float hann = 0.5 - 0.5 * cosf(2 * PI * t);
+      in2[i] = in1[i] * hann;
+    }
+    fft(in2, 1, out, N);
 
     float max_amp = 0.0f;
     for (size_t i = 0; i < N / 2; ++i) {
