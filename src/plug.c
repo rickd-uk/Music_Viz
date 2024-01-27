@@ -40,11 +40,12 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
 }
 
 float amp(float complex z) {
-  float a = fabsf(crealf(z));
-  float b = fabsf(cimagf(z));
-  if (a < b)
-    return b;
-  return a;
+  // float a = fabsf(crealf(z));
+  // float b = fabsf(cimagf(z));
+  // if (a < b)
+  //   return b;
+  // return a;
+  return cabsf(z);
 }
 
 void callback(void *bufferData, unsigned int frame) {
@@ -126,8 +127,7 @@ void plug_update(void) {
         SetMusicVolume(plug->music, 0.5f);
         AttachAudioStreamProcessor(plug->music.stream, callback);
         PlayMusicStream(plug->music);
-      }
-      else {
+      } else {
         plug->error = true;
       }
 
@@ -145,41 +145,34 @@ void plug_update(void) {
     fft(in, 1, out, N);
 
     float max_amp = 0.0f;
-    for (size_t i = 0; i < N; ++i) {
+    for (size_t i = 0; i < N / 2; ++i) {
       float a = amp(out[i]);
       if (max_amp < a)
         max_amp = a;
     }
 
     float step = 1.06;
+    float lowf = 1.0f;
     size_t m = 0;
-    for (float f = 20.0f; (size_t)f < N; f *= step) {
+    for (float f = lowf; (size_t)f < N / 2; f = ceilf(f * step)) {
       m += 1;
     }
 
     float cell_width = (float)w / m;
     m = 0;
-    for (float f = 20.0f; (size_t)f < N; f *= step) {
-      float f1 = f * step;
+    for (float f = lowf; (size_t)f < N / 2; f = ceilf(f * step)) {
+      float f1 = ceilf(f * step);
       float a = 0.0f;
-      for (size_t q = (size_t)f; q < N && q < (size_t)f1; ++q) {
-        a += amp(out[q]);
+      for (size_t q = (size_t)f; q < N / 2 && q < (size_t)f1; ++q) {
+        float b = amp(out[q]);
+        if (b > a)
+          a = b;
       }
-      a /= (size_t)f1 - (size_t)f + 1;
       float t = a / max_amp;
-      /* DrawRectangle(m * cell_width, h / 2, cell_width, h / 2 * t, GREEN); */
-      DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
+      DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, GREEN);
+      // DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
       m += 1;
     }
-    /* for (size_t i = 0; i < global_frames_count; ++i) { */
-    /*   float t = global_frames[i].left; */
-    /*   if (t > 0) { */
-    /*     DrawRectangle(i * cell_width, h / 2.0f - h / 2.0f * t, 1, h / 2.0f * t, RED); */
-    /*   } else { */
-    /*     DrawRectangle(i * cell_width, h / 2.0f, 1, h / 2.0f * t, RED); */
-    /*   } */
-    /* } */
-    /* if (global_frames_count > 0) exit(1); */
   } else {
     const char *label;
     Color color;
