@@ -177,7 +177,7 @@ void plug_update(void) {
           a = b;
       }
       float t = a / max_amp;
-      DrawRectangle(m * cell_width, h / 2 - h / 2 * t, cell_width, h / 2 * t, GREEN);
+      DrawRectangle(m * cell_width, h - h / 2 * t, cell_width, h / 2 * t, GREEN);
       // DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
       m += 1;
     }
