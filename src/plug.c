@@ -46,7 +46,9 @@ float amp(float complex z) {
   // if (a < b)
   //   return b;
   // return a;
-  return cabsf(z);
+  float a = crealf(z);
+  float b = cimagf(z);
+  return logf(a * a + b * b);
 }
 
 void callback(void *bufferData, unsigned int frame) {
