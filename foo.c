@@ -25,20 +25,12 @@ void dft(float in[], float complex out[], size_t n) {
 
 int main(void) {
 
-  for (size_t i = 0; i < N; ++i) {
-    float t = (float)i / (N - 1);
-    float hann = 0.5 - 0.5 * cosf(2 * M_PI * t);
-    for (size_t j = 0; j < hann * N; ++j) {
-      printf("*");
-    }
-    printf("\n");
-  }
-  return 0;
-
-  float f = 1.0f;
+  float f = 3.14f;
   for (size_t i = 0; i < N; ++i) {
     float t = (float)i / N;
-    in[i] = sinf(2 * M_PI * f * t);
+    float hann = 0.5 - 0.5 * cosf(2 * M_PI * t);
+
+    in[i] = sinf(2 * M_PI * f * t + 0.5) * hann;
   }
 
   dft(in, out, N);
@@ -59,6 +51,7 @@ int main(void) {
     }
     printf("\n");
   }
+
   for (size_t k = 0; k < 2; ++k) {
     for (size_t i = 0; i < N; ++i) {
       float t = (in[i] + 1) / 2 * N;
