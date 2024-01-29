@@ -12,6 +12,7 @@ float in_raw[N];
 float in_win[N];
 float complex out_raw[N];
 float out_log[N];
+float out_smooth[N];
 
 typedef struct {
   Music music;
@@ -135,6 +136,8 @@ void plug_update(void) {
   BeginDrawing();
   ClearBackground(BLACK);
 
+  float dt = GetFrameTime();
+
   if (IsMusicReady(plug->music)) {
 
     // apply the Hann window on input
@@ -168,13 +171,18 @@ void plug_update(void) {
       out_log[i] /= max_amp;
     }
 
+    float smoothing_factor = 8.0f;
+    // m= squashed samples
+    for (size_t i = 0; i < m; ++i) {
+      out_smooth[i] += (out_log[i] - out_smooth[i]) * smoothing_factor * dt;
+    }
     // Display freq.
     float cell_width = (float)w / m;
     for (size_t i = 0; i < m; ++i) {
-      float t = out_log[i];
+      float t = out_smooth[i];
       // float y = (float)(h - h * 2 / 3 * t);
       // DrawRectangle(m * cell_width, y, cell_width, y, BLUE);
-      DrawRectangle(i * cell_width, h - h * 2 / 3 * t, cell_width, h * 2 / 3 * t, BLUE);
+      DrawRectangle(i * cell_width, h - h * 2 / 3 * t, ceilf(cell_width), h * 2 / 3 * t, GREEN);
     }
   } else {
     const char *label;
