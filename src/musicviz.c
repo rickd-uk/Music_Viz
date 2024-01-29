@@ -13,6 +13,7 @@
 
 #include "plug.h"
 
+#define HOTRELOAD
 #define ARRAY_LEN(xs) sizeof(xs) / sizeof(xs[0])
 
 const char *libplug_file_name = "libplug.so";

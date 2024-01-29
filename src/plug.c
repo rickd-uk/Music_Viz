@@ -8,9 +8,10 @@
 
 #define FONT_SIZE 39
 
-float in1[N];
-float in2[N];
-float _Complex out[N];
+float in_raw[N];
+float in_win[N];
+float complex out_raw[N];
+float out_log[N];
 
 typedef struct {
   Music music;
@@ -18,7 +19,7 @@ typedef struct {
   bool error;
 } Plug;
 
-Plug *plug;
+Plug *plug = NULL;
 
 void fft(float in[], size_t stride, float complex out[], size_t n) {
   assert(n > 0);
@@ -27,38 +28,32 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
     out[0] = in[0];
     return;
   }
-  // test
   fft(in, stride * 2, out, n / 2);
   fft(in + stride, stride * 2, out + n / 2, n / 2);
 
   for (size_t k = 0; k < n / 2; ++k) {
     float t = (float)k / n;
-    float complex v = cexp(-2 * I * PI * t) * out[k + n / 2];
-    float complex e = out[k];
+    float complex v = cexp(-2 * I * PI * t) * out_raw[k + n / 2];
+    float complex e = out_raw[k];
     out[k] = e + v;
     out[k + n / 2] = e - v;
   }
 }
 
 float amp(float complex z) {
-  // float a = fabsf(crealf(z));
-  // float b = fabsf(cimagf(z));
-  // if (a < b)
-  //   return b;
-  // return a;
   float a = crealf(z);
   float b = cimagf(z);
   return logf(a * a + b * b);
 }
 
-void callback(void *bufferData, unsigned int frame) {
+void callback(void *bufferData, unsigned int frames) {
 
   // Frame *fs = bufferData;
-  float(*fs)[plug->music.stream.channels] = bufferData;
+  float(*fs)[2] = bufferData;
 
-  for (size_t i = 0; i < frame; ++i) {
-    memmove(in1, in1 + 1, (N - 1) * sizeof(in1[0]));
-    in1[N - 1] = fs[i][0];
+  for (size_t i = 0; i < frames; ++i) {
+    memmove(in_raw, in_raw + 1, (N - 1) * sizeof(in_raw[0]));
+    in_raw[N - 1] = fs[i][0];
   }
 }
 
@@ -85,10 +80,8 @@ void plug_post_reload(Plug *prev) {
   }
 }
 
-int q = 0;
 void plug_update(void) {
 
-  q += 1;
   if (IsMusicReady(plug->music)) {
     UpdateMusicStream(plug->music);
   }
@@ -133,9 +126,8 @@ void plug_update(void) {
       } else {
         plug->error = true;
       }
-
-      UnloadDroppedFiles(droppedFiles);
     }
+    UnloadDroppedFiles(droppedFiles);
   }
   int w = GetRenderWidth();
   int h = GetRenderHeight();
@@ -145,41 +137,44 @@ void plug_update(void) {
 
   if (IsMusicReady(plug->music)) {
 
+    // apply the Hann window on input
     for (size_t i = 0; i < N; ++i) {
-      float t = (float)i / N;
+      float t = (float)i / (N - 1);
       float hann = 0.5 - 0.5 * cosf(2 * PI * t);
-      in2[i] = in1[i] * hann;
+      in_win[i] = in_raw[i] * hann;
     }
-    fft(in2, 1, out, N);
+    fft(in_win, 1, out_raw, N);
 
-    float max_amp = 0.0f;
-    for (size_t i = 0; i < N / 2; ++i) {
-      float a = amp(out[i]);
-      if (max_amp < a)
-        max_amp = a;
-    }
-
-    float step = 1.06;
+    // Squash into logarithmic scale
+    float step = 1.06f;
     float lowf = 1.0f;
+    float max_amp = 1.0f;
     size_t m = 0;
-    for (float f = lowf; (size_t)f < N / 2; f = ceilf(f * step)) {
-      m += 1;
-    }
 
-    float cell_width = (float)w / m;
-    m = 0;
     for (float f = lowf; (size_t)f < N / 2; f = ceilf(f * step)) {
       float f1 = ceilf(f * step);
       float a = 0.0f;
       for (size_t q = (size_t)f; q < N / 2 && q < (size_t)f1; ++q) {
-        float b = amp(out[q]);
+        float b = amp(out_raw[q]);
         if (b > a)
           a = b;
       }
-      float t = a / max_amp;
-      DrawRectangle(m * cell_width, h - h / 2 * t, cell_width, h / 2 * t, GREEN);
-      // DrawCircle(m * cell_width, h / 2, h / 2 * t, BLUE);
-      m += 1;
+      if (max_amp < a)
+        max_amp = a;
+      out_log[m++] = a;
+    }
+    // Normalize freq. to 0..1 range
+    for (size_t i = 0; i < m; ++i) {
+      out_log[i] /= max_amp;
+    }
+
+    // Display freq.
+    float cell_width = (float)w / m;
+    for (size_t i = 0; i < m; ++i) {
+      float t = out_log[i];
+      // float y = (float)(h - h * 2 / 3 * t);
+      // DrawRectangle(m * cell_width, y, cell_width, y, BLUE);
+      DrawRectangle(i * cell_width, h - h * 2 / 3 * t, cell_width, h * 2 / 3 * t, BLUE);
     }
   } else {
     const char *label;
