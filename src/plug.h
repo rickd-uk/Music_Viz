@@ -5,7 +5,7 @@
 #include <complex.h>
 #include <raylib.h>
 
-#define N ((1) << (10))
+#define N ((1) << (13))
 // 1 << 13  =  8,192
 
 
