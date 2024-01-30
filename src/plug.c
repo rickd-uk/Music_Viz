@@ -187,7 +187,13 @@ void plug_update(void) {
 
       float t = out_smooth[i];
       float y = ((float)h * 2 / 3 * t);
-      DrawRectangle(i * cell_width, h - y, ceilf(cell_width), y, color);
+
+      Vector2 center = {// width
+                        i * cell_width + cell_width/2,
+                        // height
+                        h - y};
+      // DrawRectangle(i * cell_width, h - y, ceilf(cell_width), y, color);
+      DrawCircleV(center, cell_width, color);
     }
   } else {
     const char *label;
