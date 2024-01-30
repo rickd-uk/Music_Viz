@@ -197,8 +197,8 @@ void plug_update(void) {
                         // height
                         h};
       // DrawRectangle(i * cell_width, h - y, ceilf(cell_width), y, color);
-      float thickness = cell_width / 2 *t;
-      float radius = cell_width * t;
+      float thickness = cell_width / 2 * sqrtf(t);
+      float radius = cell_width * sqrtf(t);
       DrawCircleV(startPos, radius, color);
       DrawLineEx(startPos, endPos, thickness, color);
     }
