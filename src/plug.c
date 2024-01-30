@@ -34,8 +34,8 @@ void fft(float in[], size_t stride, float complex out[], size_t n) {
 
   for (size_t k = 0; k < n / 2; ++k) {
     float t = (float)k / n;
-    float complex v = cexp(-2 * I * PI * t) * out_raw[k + n / 2];
-    float complex e = out_raw[k];
+    float complex v = cexp(-2 * I * PI * t) * out[k + n / 2];
+    float complex e = out[k];
     out[k] = e + v;
     out[k + n / 2] = e - v;
   }
