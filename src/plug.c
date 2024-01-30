@@ -180,10 +180,14 @@ void plug_update(void) {
     // Display freq.
     float cell_width = (float)w / m;
     for (size_t i = 0; i < m; ++i) {
+      float hue = (float)i / m;
+      float saturation = 1.0f;
+      float val = 0.8f;
+      Color color = ColorFromHSV(hue * 360, saturation, val);
 
       float t = out_smooth[i];
       float y = ((float)h * 2 / 3 * t);
-      DrawRectangle(i * cell_width, h - y, ceilf(cell_width), y, GREEN);
+      DrawRectangle(i * cell_width, h - y, ceilf(cell_width), y, color);
     }
   } else {
     const char *label;
