@@ -58,6 +58,7 @@ int main(void) {
   if (!reload_libplug())
     return 1;
 
+  SetConfigFlags(FLAG_MSAA_4X_HINT);
   InitWindow(800, 480, "musicviz");
   SetTargetFPS(60);
   InitAudioDevice();
