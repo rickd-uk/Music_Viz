@@ -58,7 +58,7 @@ int main(void) {
   if (!reload_libplug())
     return 1;
 
-  InitWindow(640, 480, "musicviz");
+  InitWindow(800, 480, "musicviz");
   SetTargetFPS(60);
   InitAudioDevice();
 
