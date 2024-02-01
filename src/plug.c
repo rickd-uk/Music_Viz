@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <math.h>
 #include <raylib.h>
+#include <rlgl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -208,6 +209,8 @@ void plug_update(void) {
       // clang-format on
     }
 
+    Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+
     // Display the circles
     BeginShaderMode(plug->circle);
     for (size_t i = 0; i < m; ++i) {
@@ -223,16 +226,23 @@ void plug_update(void) {
                         i * cell_width + cell_width / 2,
                         // height
                         h - y};
-      float radius = cell_width * sqrtf(t);
+      float radius = cell_width * 8.0 * sqrtf(t);
 
       // clang-format off
-      Rectangle rec = {
-        .x = center.x - radius, 
-        .y = center.y - radius,
-        .width = 2 * radius, 
-        .height = 2 * radius
+      // Rectangle rec = {
+      //   .x = center.x - radius, 
+      //   .y = center.y - radius,
+      //   .width = 2 * radius, 
+      //   .height = 2 * radius
+      // };
+
+       // DrawRectangleRec(rec, color);
+      Vector2 position = {
+        .x = center.x - radius,
+        .y = center.y - radius
       };
-       DrawRectangleRec(rec, color);
+
+      DrawTextureEx(texture, position, 0, 2*radius, color);
       // clang-format on
     }
     EndShaderMode();
