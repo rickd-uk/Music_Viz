@@ -17,6 +17,7 @@ float out_smooth[N];
 typedef struct {
   Music music;
   Font font;
+  Shader circle;
   bool error;
 } Plug;
 
@@ -65,6 +66,7 @@ void plug_init(void) {
   memset(plug, 0, sizeof(*plug));
 
   plug->font = LoadFontEx("./fonts/RubikBurned-Regular.ttf", FONT_SIZE, NULL, 0);
+  plug->circle = LoadShader(NULL, "./shaders/circle.fs");
 }
 
 Plug *plug_pre_reload(void) {
@@ -79,6 +81,8 @@ void plug_post_reload(Plug *prev) {
   if (IsMusicReady(plug->music)) {
     AttachAudioStreamProcessor(plug->music.stream, callback);
   }
+  UnloadShader(plug->circle);
+  plug->circle = LoadShader(NULL, "./shaders/circle.fs");
 }
 
 void plug_update(void) {
@@ -179,6 +183,8 @@ void plug_update(void) {
 
     // Display freq.
     float cell_width = (float)w / m;
+
+    // Display the bars
     for (size_t i = 0; i < m; ++i) {
       float hue = (float)i / m;
       float saturation = 1.0f;
@@ -198,10 +204,39 @@ void plug_update(void) {
                         h};
       // DrawRectangle(i * cell_width, h - y, ceilf(cell_width), y, color);
       float thickness = cell_width / 2 * sqrtf(t);
-      float radius = cell_width * sqrtf(t);
-      DrawCircleV(startPos, radius, color);
       DrawLineEx(startPos, endPos, thickness, color);
+      // clang-format on
     }
+
+    // Display the circles
+    BeginShaderMode(plug->circle);
+    for (size_t i = 0; i < m; ++i) {
+      float hue = (float)i / m;
+      float saturation = 1.0f;
+      float val = 0.8f;
+      Color color = ColorFromHSV(hue * 360, saturation, val);
+
+      float t = out_smooth[i];
+      float y = ((float)h * 2 / 3 * t);
+
+      Vector2 center = {// width
+                        i * cell_width + cell_width / 2,
+                        // height
+                        h - y};
+      float radius = cell_width * sqrtf(t);
+
+      // clang-format off
+      Rectangle rec = {
+        .x = center.x - radius, 
+        .y = center.y - radius,
+        .width = 2 * radius, 
+        .height = 2 * radius
+      };
+       DrawRectangleRec(rec, color);
+      // clang-format on
+    }
+    EndShaderMode();
+
   } else {
     const char *label;
     Color color;
