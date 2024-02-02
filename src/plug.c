@@ -14,6 +14,7 @@ float in_win[N];
 float complex out_raw[N];
 float out_log[N];
 float out_smooth[N];
+float out_smear[N];
 
 typedef struct {
   Music music;
@@ -180,6 +181,8 @@ void plug_update(void) {
     // m= squashed samples
     for (size_t i = 0; i < m; ++i) {
       out_smooth[i] += (out_log[i] - out_smooth[i]) * smoothing_factor * dt;
+      float smear_factor = 5;
+      out_smear[i] += (out_smooth[i] - out_smear[i]) * smear_factor * dt;
     }
 
     // Display freq.
@@ -228,24 +231,31 @@ void plug_update(void) {
                         h - y};
       float radius = cell_width * 8.0 * sqrtf(t);
 
-      // clang-format off
-      // Rectangle rec = {
-      //   .x = center.x - radius, 
-      //   .y = center.y - radius,
-      //   .width = 2 * radius, 
-      //   .height = 2 * radius
-      // };
+      Vector2 position = {.x = center.x - radius, .y = center.y - radius};
 
-       // DrawRectangleRec(rec, color);
-      Vector2 position = {
-        .x = center.x - radius,
-        .y = center.y - radius
-      };
-
-      DrawTextureEx(texture, position, 0, 2*radius, color);
+      DrawTextureEx(texture, position, 0, 2 * radius, color);
       // clang-format on
     }
     EndShaderMode();
+
+    for (size_t i = 0; i < m; ++i) {
+      Color color = RED;
+      float start = out_smear[i];
+      float end = out_smooth[i];
+
+      Vector2 startPos = {// width
+                          i * cell_width + cell_width / 2,
+                          // height
+                          h - h * 2 / 3 * start};
+      Vector2 endPos = {// width
+                        i * cell_width + cell_width / 2,
+                        // height
+                        h - h * 2 / 3 * end};
+      float radius = cell_width * 0.75;
+      DrawLineV(startPos, endPos, color);
+      DrawCircleV(startPos, radius, color);
+      // clang-format on
+    }
 
   } else {
     const char *label;
