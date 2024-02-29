@@ -20,6 +20,7 @@ typedef struct {
   Music music;
   Font font;
   Shader circle;
+  Shader smear;
   bool error;
 } Plug;
 
@@ -69,6 +70,7 @@ void plug_init(void) {
 
   plug->font = LoadFontEx("./fonts/RubikBurned-Regular.ttf", FONT_SIZE, NULL, 0);
   plug->circle = LoadShader(NULL, "./shaders/circle.fs");
+  plug->smear = LoadShader(NULL, "./shaders/smear.fs");
 }
 
 Plug *plug_pre_reload(void) {
@@ -85,6 +87,8 @@ void plug_post_reload(Plug *prev) {
   }
   UnloadShader(plug->circle);
   plug->circle = LoadShader(NULL, "./shaders/circle.fs");
+  UnloadShader(plug->smear);
+  plug->smear = LoadShader(NULL, "./shaders/smear.fs");
 }
 
 void plug_update(void) {
@@ -238,6 +242,7 @@ void plug_update(void) {
     }
     EndShaderMode();
 
+    BeginShaderMode(plug->smear);
     for (size_t i = 0; i < m; ++i) {
       float hue = (float)i / m;
       Color color = ColorFromHSV(hue * 360, saturation, val);
@@ -254,26 +259,30 @@ void plug_update(void) {
                         h - h * 2 / 3 * end};
 
       float radius = cell_width;
+      Vector2 origin = {0};
       if (endPos.y >= startPos.y) {
         // clang-format off
-        Rectangle rec = {
+        Rectangle dest = {
           .x = startPos.x - radius, 
           .y = startPos.y, 
           .width = 2 * radius, 
           .height = endPos.y - startPos.y
         };
-      DrawRectangleRec(rec, color);
+        Rectangle source = {0,0,1,1};
+        DrawTexturePro(texture, source, dest, origin, 0, color);
       } else {
-        Rectangle rec = {
+        Rectangle dest = {
           .x = endPos.x - radius, 
           .y = endPos.y, 
           .width = 2 * radius, 
           .height = startPos.y - endPos.y
         };
-        DrawRectangleRec(rec, color);
+
+        Rectangle source = {0,0,1,1};
+        DrawTexturePro(texture, source, dest, origin, 0, color);
       }
     }
-
+    EndShaderMode();
     // clang-format on
   } else {
     const char *label;
