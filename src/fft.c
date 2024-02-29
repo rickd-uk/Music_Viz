@@ -72,4 +72,3 @@ int main() {
 //  the value of it is the amplitude
 // clang -o fft fft.c -lm && ./fft
 
-// Continue-->  2:13:38 - Music Visualizer (Fast Fourier Transform)
