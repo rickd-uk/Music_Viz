@@ -8,12 +8,12 @@ in vec4 fragColor;
 out vec4 finalColor;
 
 void main() {
-  float radius = 0.405;
+  float radius = 0.2;
   vec2 p = fragTexCoord - vec2(0.5);
   if (length(p)  <= 0.5) {
     float s = length(p) - radius;
     if (s <= 0) {
-      finalColor = fragColor * 1.25;
+      finalColor = fragColor ;
     } else {
       float t = 1 - s / (0.5 - radius);
       finalColor = vec4(fragColor.xyz,t);

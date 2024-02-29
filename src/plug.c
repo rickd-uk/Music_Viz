@@ -218,6 +218,48 @@ void plug_update(void) {
 
     Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
 
+    // Display the smears
+    BeginShaderMode(plug->smear);
+    for (size_t i = 0; i < m; ++i) {
+      float hue = (float)i / m;
+      Color color = ColorFromHSV(hue * 360, saturation, val);
+      float start = out_smear[i];
+      float end = out_smooth[i];
+
+      Vector2 startPos = {// width
+                          i * cell_width + cell_width / 2,
+                          // height
+                          h - h * 2 / 3 * start};
+      Vector2 endPos = {// width
+                        i * cell_width + cell_width / 2,
+                        // height
+                        h - h * 2 / 3 * end};
+
+      float radius = cell_width * sqrtf(end);
+      Vector2 origin = {0};
+      if (endPos.y >= startPos.y) {
+        // clang-format off
+        Rectangle dest = {
+          .x = startPos.x - radius, 
+          .y = startPos.y, 
+          .width = 2 * radius, 
+          .height = endPos.y - startPos.y
+        };
+        Rectangle source = {0,0,1,0.5};
+        DrawTexturePro(texture, source, dest, origin, 0, color);
+      } else {
+        Rectangle dest = {
+          .x = endPos.x - radius, 
+          .y = endPos.y, 
+          .width = 2 * radius, 
+          .height = startPos.y - endPos.y
+        };
+
+        Rectangle source = {0,0.5,1,0.5};
+        DrawTexturePro(texture, source, dest, origin, 0, color);
+      }
+    }
+    EndShaderMode();
     // Display the circles
     BeginShaderMode(plug->circle);
     for (size_t i = 0; i < m; ++i) {
@@ -242,47 +284,6 @@ void plug_update(void) {
     }
     EndShaderMode();
 
-    BeginShaderMode(plug->smear);
-    for (size_t i = 0; i < m; ++i) {
-      float hue = (float)i / m;
-      Color color = ColorFromHSV(hue * 360, saturation, val);
-      float start = out_smear[i];
-      float end = out_smooth[i];
-
-      Vector2 startPos = {// width
-                          i * cell_width + cell_width / 2,
-                          // height
-                          h - h * 2 / 3 * start};
-      Vector2 endPos = {// width
-                        i * cell_width + cell_width / 2,
-                        // height
-                        h - h * 2 / 3 * end};
-
-      float radius = cell_width;
-      Vector2 origin = {0};
-      if (endPos.y >= startPos.y) {
-        // clang-format off
-        Rectangle dest = {
-          .x = startPos.x - radius, 
-          .y = startPos.y, 
-          .width = 2 * radius, 
-          .height = endPos.y - startPos.y
-        };
-        Rectangle source = {0,0,1,1};
-        DrawTexturePro(texture, source, dest, origin, 0, color);
-      } else {
-        Rectangle dest = {
-          .x = endPos.x - radius, 
-          .y = endPos.y, 
-          .width = 2 * radius, 
-          .height = startPos.y - endPos.y
-        };
-
-        Rectangle source = {0,0,1,1};
-        DrawTexturePro(texture, source, dest, origin, 0, color);
-      }
-    }
-    EndShaderMode();
     // clang-format on
   } else {
     const char *label;
