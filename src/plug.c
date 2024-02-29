@@ -187,12 +187,12 @@ void plug_update(void) {
 
     // Display freq.
     float cell_width = (float)w / m;
+    float saturation = 1.0f;
+    float val = 0.8f;
 
     // Display the bars
     for (size_t i = 0; i < m; ++i) {
       float hue = (float)i / m;
-      float saturation = 1.0f;
-      float val = 0.8f;
       Color color = ColorFromHSV(hue * 360, saturation, val);
 
       float t = out_smooth[i];
@@ -239,7 +239,8 @@ void plug_update(void) {
     EndShaderMode();
 
     for (size_t i = 0; i < m; ++i) {
-      Color color = RED;
+      float hue = (float)i / m;
+      Color color = ColorFromHSV(hue * 360, saturation, val);
       float start = out_smear[i];
       float end = out_smooth[i];
 
@@ -251,12 +252,29 @@ void plug_update(void) {
                         i * cell_width + cell_width / 2,
                         // height
                         h - h * 2 / 3 * end};
-      float radius = cell_width * 0.75;
-      DrawLineV(startPos, endPos, color);
-      DrawCircleV(startPos, radius, color);
-      // clang-format on
+
+      float radius = cell_width;
+      if (endPos.y >= startPos.y) {
+        // clang-format off
+        Rectangle rec = {
+          .x = startPos.x - radius, 
+          .y = startPos.y, 
+          .width = 2 * radius, 
+          .height = endPos.y - startPos.y
+        };
+      DrawRectangleRec(rec, color);
+      } else {
+        Rectangle rec = {
+          .x = endPos.x - radius, 
+          .y = endPos.y, 
+          .width = 2 * radius, 
+          .height = startPos.y - endPos.y
+        };
+        DrawRectangleRec(rec, color);
+      }
     }
 
+    // clang-format on
   } else {
     const char *label;
     Color color;
